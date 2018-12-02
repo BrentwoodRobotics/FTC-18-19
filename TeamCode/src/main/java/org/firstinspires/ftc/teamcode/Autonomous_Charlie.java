@@ -30,13 +30,10 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 
 /**
@@ -52,9 +49,9 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="BasicDrop", group="Autonomous")
+@Autonomous(name="Charlie", group="Autonomous")
 // @Disabled
-public class Autonomous_BasicDrop extends LinearOpMode {
+public class Autonomous_Charlie extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -117,6 +114,38 @@ public class Autonomous_BasicDrop extends LinearOpMode {
             // Retract the shaft
             rearLift.setTargetPosition(10);
             rearLift.setPower(-1);
+
+            // Aim towards target
+            leftDrive.setTargetPosition(800);
+            rightDrive.setTargetPosition(100);
+            leftDrive.setPower(0.5);
+            rightDrive.setPower(0.5);
+            sleep(2000);
+
+            // Drive towards target
+            leftDrive.setTargetPosition(60000);
+            rightDrive.setTargetPosition(60000);
+            leftDrive.setPower(1);
+            rightDrive.setPower(1);
+            sleep(6000);
+
+            // Release marker
+            dropperServo.setPosition(DROPPER_OPENED_POSITION);
+            sleep(500);
+            dropperServo.setPosition(DROPPER_CLOSED_POSITION);
+
+            // Turn North towards Crater
+            leftDrive.setTargetPosition(2000);
+            rightDrive.setTargetPosition(-2000);
+            leftDrive.setPower(0.5);
+            rightDrive.setPower(-0.5);
+            sleep(2000);
+
+            // Drive towards Crater
+            leftDrive.setTargetPosition(60000);
+            rightDrive.setTargetPosition(60000);
+            leftDrive.setPower(1);
+            rightDrive.setPower(1);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
