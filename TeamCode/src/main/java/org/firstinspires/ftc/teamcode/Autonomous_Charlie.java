@@ -49,7 +49,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Charlie", group="Autonomous")
+@Autonomous(name="CharlieTest", group="Autonomous")
 // @Disabled
 public class Autonomous_Charlie extends LinearOpMode {
 
@@ -59,6 +59,14 @@ public class Autonomous_Charlie extends LinearOpMode {
     private DcMotor rightDrive = null;
     private DcMotor rearLift = null;
     private Servo dropperServo = null;
+
+    // Clears and resets encoder values
+    public void clearDriveEncoders() {
+        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
 
     @Override
     public void runOpMode() {
@@ -102,14 +110,16 @@ public class Autonomous_Charlie extends LinearOpMode {
             // Lowers the robot from the Lander
             rearLift.setTargetPosition(7500);
             rearLift.setPower(1);
-            sleep(6000);
+            sleep(3500);
+            rearLift.setPower(0);
 
             // Shimmy forward
-            leftDrive.setTargetPosition(100);
+            leftDrive.setTargetPosition(-200);
             rightDrive.setTargetPosition(800);
-            leftDrive.setPower(0.5);
-            rightDrive.setPower(0.5);
+            leftDrive.setPower(-0.25);
+            rightDrive.setPower(0.25);
             sleep(2000);
+            clearDriveEncoders();
 
             // Retract the shaft
             rearLift.setTargetPosition(10);
@@ -117,17 +127,23 @@ public class Autonomous_Charlie extends LinearOpMode {
 
             // Aim towards target
             leftDrive.setTargetPosition(800);
-            rightDrive.setTargetPosition(100);
-            leftDrive.setPower(0.5);
-            rightDrive.setPower(0.5);
+            rightDrive.setTargetPosition(-200);
+            leftDrive.setPower(0.25);
+            rightDrive.setPower(-0.25);
             sleep(2000);
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
+            clearDriveEncoders();
 
             // Drive towards target
-            leftDrive.setTargetPosition(60000);
-            rightDrive.setTargetPosition(60000);
+            leftDrive.setTargetPosition(3600);
+            rightDrive.setTargetPosition(3600);
             leftDrive.setPower(1);
             rightDrive.setPower(1);
-            sleep(6000);
+            sleep(4000);
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
+            clearDriveEncoders();
 
             // Release marker
             dropperServo.setPosition(DROPPER_OPENED_POSITION);
@@ -135,17 +151,28 @@ public class Autonomous_Charlie extends LinearOpMode {
             dropperServo.setPosition(DROPPER_CLOSED_POSITION);
 
             // Turn North towards Crater
-            leftDrive.setTargetPosition(2000);
-            rightDrive.setTargetPosition(-2000);
+            leftDrive.setTargetPosition(1350);
+            rightDrive.setTargetPosition(-1350);
             leftDrive.setPower(0.5);
             rightDrive.setPower(-0.5);
-            sleep(2000);
+            sleep(3000);
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
+            clearDriveEncoders();
 
             // Drive towards Crater
-            leftDrive.setTargetPosition(60000);
-            rightDrive.setTargetPosition(60000);
+            leftDrive.setTargetPosition(7500);
+            rightDrive.setTargetPosition(7500);
+            leftDrive.setPower(0.5);
+            rightDrive.setPower(0.5);
+            sleep(1000);
             leftDrive.setPower(1);
             rightDrive.setPower(1);
+            sleep(4000);
+            leftDrive.setPower(0.25);
+            rightDrive.setPower(0.25);
+            sleep(9000);
+            clearDriveEncoders();
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
