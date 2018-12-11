@@ -97,10 +97,7 @@ public class Autonomous_BasicDrop extends LinearOpMode {
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
-            // Configurable values
-            double DROPPER_CLOSED_POSITION = 0.8;
-            double DROPPER_OPENED_POSITION = 0.2;
+        if (opModeIsActive()) {
 
             // Lowers the robot from the Lander
             rearLift.setTargetPosition(7500);
@@ -117,6 +114,9 @@ public class Autonomous_BasicDrop extends LinearOpMode {
             // Retract the shaft
             rearLift.setTargetPosition(10);
             rearLift.setPower(-1);
+
+            // Sleep
+            sleep(20000);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());

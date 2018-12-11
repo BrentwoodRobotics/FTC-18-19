@@ -49,7 +49,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="CharlieTest", group="Autonomous")
+@Autonomous(name="Charlie", group="Autonomous")
 // @Disabled
 public class Autonomous_Charlie extends LinearOpMode {
 
@@ -102,10 +102,10 @@ public class Autonomous_Charlie extends LinearOpMode {
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
+        if (opModeIsActive()) {
             // Configurable values
-            double DROPPER_CLOSED_POSITION = 0.8;
-            double DROPPER_OPENED_POSITION = 0.2;
+            double DROPPER_CLOSED_POSITION = 0.2;
+            double DROPPER_OPENED_POSITION = 0.8;
 
             // Lowers the robot from the Lander
             rearLift.setTargetPosition(7500);
@@ -136,11 +136,11 @@ public class Autonomous_Charlie extends LinearOpMode {
             clearDriveEncoders();
 
             // Drive towards target
-            leftDrive.setTargetPosition(3600);
-            rightDrive.setTargetPosition(3600);
+            leftDrive.setTargetPosition(3700);
+            rightDrive.setTargetPosition(3700);
             leftDrive.setPower(1);
             rightDrive.setPower(1);
-            sleep(4000);
+            sleep(4500);
             leftDrive.setPower(0);
             rightDrive.setPower(0);
             clearDriveEncoders();
@@ -151,8 +151,8 @@ public class Autonomous_Charlie extends LinearOpMode {
             dropperServo.setPosition(DROPPER_CLOSED_POSITION);
 
             // Turn North towards Crater
-            leftDrive.setTargetPosition(1350);
-            rightDrive.setTargetPosition(-1350);
+            leftDrive.setTargetPosition(1300);
+            rightDrive.setTargetPosition(-1300);
             leftDrive.setPower(0.5);
             rightDrive.setPower(-0.5);
             sleep(3000);
@@ -161,8 +161,8 @@ public class Autonomous_Charlie extends LinearOpMode {
             clearDriveEncoders();
 
             // Drive towards Crater
-            leftDrive.setTargetPosition(7500);
-            rightDrive.setTargetPosition(7500);
+            leftDrive.setTargetPosition(7000);
+            rightDrive.setTargetPosition(7000);
             leftDrive.setPower(0.5);
             rightDrive.setPower(0.5);
             sleep(1000);
@@ -171,8 +171,11 @@ public class Autonomous_Charlie extends LinearOpMode {
             sleep(4000);
             leftDrive.setPower(0.25);
             rightDrive.setPower(0.25);
-            sleep(9000);
+            sleep(8000);
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
             clearDriveEncoders();
+            sleep(10000); //Hopefully this will stop if from looping
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());

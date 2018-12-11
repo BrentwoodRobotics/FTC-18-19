@@ -116,11 +116,13 @@ public class TeleOp_BasicDrive extends OpMode
     @Override
     public void loop() {
         // Configurable values
-        double DROPPER_CLOSED_POSITION = 0.8;
-        double DROPPER_OPENED_POSITION = 0.2;
+        double DROPPER_CLOSED_POSITION = 0.2;
+        double DROPPER_OPENED_POSITION = 0.8;
         double LIFT_UP_POWER = 1;
         double LIFT_DOWN_POWER = -1;
-        double SPEED_LIMITER = 2;
+        double SPEED_BOOSTER = 1;
+        double SPEED_DEFAULT = 2;
+        double SPEED_LIMITER = 4;
         int ERECT_LIMIT = 10000;
 
         // Setup a variable for each drive wheel to save power level for telemetry
@@ -128,16 +130,18 @@ public class TeleOp_BasicDrive extends OpMode
         double rightPower;
 
         // Adds the boost button
-        double speedRetarder;
+        double speedModifier;
         if (gamepad1.right_bumper){
-            speedRetarder = 1;
+            speedModifier = SPEED_BOOSTER;
+        } else if (gamepad1.left_bumper) {
+            speedModifier = SPEED_LIMITER;
         } else {
-            speedRetarder = SPEED_LIMITER;
+            speedModifier = SPEED_DEFAULT;
         }
 
         // Calculate power for drive wheels
-        leftPower  = -gamepad1.left_stick_y / speedRetarder;
-        rightPower = -gamepad1.right_stick_y / speedRetarder;
+        leftPower  = -gamepad1.left_stick_y / speedModifier;
+        rightPower = -gamepad1.right_stick_y / speedModifier;
 
         // Send calculated power to wheels
         leftDrive.setPower(leftPower);
@@ -168,7 +172,7 @@ public class TeleOp_BasicDrive extends OpMode
             dropperServo.setPosition(DROPPER_OPENED_POSITION);
         }
 
-        // Clears encoder values (for testing/debugging purposes ONLY)
+          // Clears encoder values (for testing/debugging purposes ONLY)
         if (gamepad2.back) {
             rearLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rearLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
