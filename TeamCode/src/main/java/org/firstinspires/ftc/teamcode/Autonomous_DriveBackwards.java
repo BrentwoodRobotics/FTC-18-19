@@ -29,11 +29,13 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.disnodeteam.dogecv.scoring.MaxAreaScorer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.disnodeteam.dogecv.detectors.roverrukus.SamplingOrderDetector;
 
 
 /**
@@ -120,6 +122,7 @@ public class Autonomous_DriveBackwards extends LinearOpMode {
             rearLift.setTargetPosition(10);
             rearLift.setPower(-1);
 
+            // Drive forward
             leftDrive.setTargetPosition(1500);
             rightDrive.setTargetPosition(1500);
             leftDrive.setPower(1);
