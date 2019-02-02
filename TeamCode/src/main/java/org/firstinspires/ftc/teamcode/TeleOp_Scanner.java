@@ -29,13 +29,16 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.disnodeteam.dogecv.CameraViewDisplay;
+import com.disnodeteam.dogecv.DogeCV;
+import com.disnodeteam.dogecv.detectors.roverrukus.GoldAlignDetector;
+import com.disnodeteam.dogecv.detectors.roverrukus.SamplingOrderDetector;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -51,9 +54,9 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="NerdyBirds: Basic Op Mode", group="Iterative Opmode")
+@TeleOp(name="Scanner Testing", group="DevOp")
 //@Disabled
-public class TeleOp_BasicDrive extends OpMode
+public class TeleOp_Scanner extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -61,6 +64,7 @@ public class TeleOp_BasicDrive extends OpMode
     private DcMotor rightDrive = null;
     private DcMotor rearLift = null;
     private Servo dropperServo = null;
+    private GoldAlignDetector detector;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -90,6 +94,27 @@ public class TeleOp_BasicDrive extends OpMode
         leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        telemetry.addData("Status", "DogeCV 2018.0 - Gold Align Example");
+
+        // Set up detector
+        detector = new GoldAlignDetector(); // Create detector
+        detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance(), 1, false); // Initialize it with the app context and camera
+        detector.useDefaults(); // Set detector to use default settings
+
+        // Optional tuning
+        detector.alignSize = 100; // How wide (in pixels) is the range in which the gold object will be aligned. (Represented by green bars in the preview)
+        detector.alignPosOffset = 0; // How far from center frame to offset this alignment zone.
+        detector.downscale = 0.4; // How much to downscale the input frames
+
+        detector.areaScoringMethod = DogeCV.AreaScoringMethod.MAX_AREA; // Can also be PERFECT_AREA
+        //detector.perfectAreaScorer.perfectArea = 10000; // if using PERFECT_AREA scoring
+        detector.maxAreaScorer.weight = 0.005; //
+
+        detector.ratioScorer.weight = 5; //
+        detector.ratioScorer.perfectRatio = 1.0; // Ratio adjustment
+
+        detector.enable(); // Start the detector!
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -149,30 +174,22 @@ public class TeleOp_BasicDrive extends OpMode
 
         // Moves the lift up and down
         if (gamepad2.dpad_up){
-            if (rearLift.getCurrentPosition() < ERECT_LIMIT){        // Makes sure the lift doesn't go too high
-                rearLift.setPower(LIFT_UP_POWER);
-            } else {
-                rearLift.setPower(0);
-            }
+            rearLift.setPower(LIFT_UP_POWER);
         } else if (gamepad2.dpad_down) {
-            if (rearLift.getCurrentPosition() > 10){                 // Makes sure the lift doesn't go too low
-                rearLift.setPower(LIFT_DOWN_POWER);
-            } else {
-                rearLift.setPower(0);
-            }
+            rearLift.setPower(LIFT_DOWN_POWER);
         } else {
             rearLift.setPower(0);
         }
 
         // Control the dropper servo
         double dropperServoPos = dropperServo.getPosition();
-        if (gamepad2.b){
+        if (gamepad2.x){
             dropperServo.setPosition(DROPPER_CLOSED_POSITION);
-        } else if (gamepad2.x){
+        } else if (gamepad2.b){
             dropperServo.setPosition(DROPPER_OPENED_POSITION);
         }
 
-          // Clears encoder values (for testing/debugging purposes ONLY)
+        // Clears encoder values (for testing/debugging purposes ONLY)
         if (gamepad2.back) {
             rearLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rearLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -195,6 +212,7 @@ public class TeleOp_BasicDrive extends OpMode
         telemetry.addData("Rear Lift Position", rearLiftPos);
         telemetry.addData("Left Wheel Position", leftWheelPos);
         telemetry.addData("Right Wheel Position", rightWheelPos);
+        telemetry.addData("Gold position", detector.getXPosition());
     }
 
     /*
@@ -202,6 +220,8 @@ public class TeleOp_BasicDrive extends OpMode
      */
     @Override
     public void stop() {
+        detector.disable();
     }
 
 }
+

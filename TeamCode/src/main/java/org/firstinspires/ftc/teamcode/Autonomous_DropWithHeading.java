@@ -29,12 +29,23 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Func;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+
+import java.util.Locale;
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -49,18 +60,23 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Bravo", group="Autonomous")
+@Autonomous(name="Autonomous Drop Heading", group="Autonomous")
 // @Disabled
-public class Autonomous_Bravo extends LinearOpMode {
+public class Autonomous_DropWithHeading extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor rearLift = null;
-    private Servo dropperServo = null;
 
-    // Clears and resets encoder values
+    // The IMU sensor object
+    BNO055IMU imu;
+
+    // State used for updating telemetry
+    Orientation angles;
+    Acceleration gravity;
+
     public void clearDriveEncoders() {
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -77,7 +93,6 @@ public class Autonomous_Bravo extends LinearOpMode {
         leftDrive  = hardwareMap.get(DcMotor.class, "motorLeft");
         rightDrive = hardwareMap.get(DcMotor.class, "motorRight");
         rearLift = hardwareMap.get(DcMotor.class, "rearLift");
-        dropperServo = hardwareMap.get(Servo.class, "dropperServo");
 
         // Set DC motor directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -97,92 +112,104 @@ public class Autonomous_Bravo extends LinearOpMode {
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+        // Set up the parameters with which we will use our IMU. Note that integration
+        // algorithm here just reports accelerations to the logcat log; it doesn't actually
+        // provide positional information.
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
+        // Get heading while on lander
+        angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double startHeading = angles.firstAngle;
+        telemetry.addData("First Angle: ", startHeading);
+        telemetry.addData("Status: ", "Init");
+        telemetry.update();
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
         if (opModeIsActive()) {
-            // Configurable values
-            double DROPPER_CLOSED_POSITION = 0.2;
-            double DROPPER_OPENED_POSITION = 0.8;
 
             // Lowers the robot from the Lander
             rearLift.setTargetPosition(7500);
             rearLift.setPower(1);
-            sleep(3500);
-            rearLift.setPower(0);
+            sleep(5500);
 
             // Shimmy forward
-            leftDrive.setTargetPosition(-200);
+            leftDrive.setTargetPosition(100);
             rightDrive.setTargetPosition(800);
-            leftDrive.setPower(-0.25);
-            rightDrive.setPower(0.25);
+            leftDrive.setPower(0.5);
+            rightDrive.setPower(0.5);
             sleep(2000);
-            leftDrive.setPower(0);
-            rightDrive.setPower(0);
             clearDriveEncoders();
 
             // Retract the shaft
             rearLift.setTargetPosition(10);
             rearLift.setPower(-1);
 
-            // Aim towards target
-            leftDrive.setTargetPosition(800);
-            rightDrive.setTargetPosition(-200);
+            // Gets new heading
+            angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            double currentHeading = angles.firstAngle;
+
+            leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            telemetry.addData("Current Heading: ", currentHeading);
+            telemetry.update();
+
+            // Aims towards new heading
+            while (currentHeading > startHeading + 2){
+                leftDrive.setPower(0.15);
+                rightDrive.setPower(-0.15);
+                angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                currentHeading = angles.firstAngle;
+            }
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
+            telemetry.addData("Start Heading: ", startHeading);
+            telemetry.addData("Current Heading: ", currentHeading);
+            telemetry.update();
+            sleep(4000);
+
+            /* Aim towards target -- DEPRECATED
+            leftDrive.setTargetPosition(950);
+            rightDrive.setTargetPosition(-300);
             leftDrive.setPower(0.25);
             rightDrive.setPower(-0.25);
             sleep(2000);
             leftDrive.setPower(0);
             rightDrive.setPower(0);
             clearDriveEncoders();
+            */
 
-            // Drive towards target
-            leftDrive.setTargetPosition(3900);
-            rightDrive.setTargetPosition(3900);
-            leftDrive.setPower(1);
-            rightDrive.setPower(1);
-            sleep(4000);
-            leftDrive.setPower(0);
-            rightDrive.setPower(0);
+            // Drive forward to crater
             clearDriveEncoders();
+            leftDrive.setTargetPosition(3500);
+            rightDrive.setTargetPosition(3500);
+            leftDrive.setPower(0.75);
+            rightDrive.setPower(0.75);
 
-            // Release marker
-            dropperServo.setPosition(DROPPER_OPENED_POSITION);
-            sleep(500);
-            dropperServo.setPosition(DROPPER_CLOSED_POSITION);
-
-            // Turn North towards Crater
-            leftDrive.setTargetPosition(1350);
-            rightDrive.setTargetPosition(-1350);
-            leftDrive.setPower(0.5);
-            rightDrive.setPower(-0.5);
-            sleep(3000);
-            leftDrive.setPower(0);
-            rightDrive.setPower(0);
-            clearDriveEncoders();
-
-            // Drive towards Crater
-            leftDrive.setTargetPosition(7500);
-            rightDrive.setTargetPosition(7500);
-            leftDrive.setPower(0.5);
-            rightDrive.setPower(0.5);
-            sleep(1000);
-            leftDrive.setPower(1);
-            rightDrive.setPower(1);
-            sleep(4000);
-            leftDrive.setPower(0.25);
-            rightDrive.setPower(0.25);
-            sleep(8000);
-            leftDrive.setPower(0);
-            rightDrive.setPower(0);
-            clearDriveEncoders();
-
+            // Sleep
             sleep(20000);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Lift Position", rearLift.getCurrentPosition());
+            telemetry.addData("Start Heading", startHeading);
+            telemetry.addData("Land Heading", currentHeading);
             telemetry.update();
         }
     }

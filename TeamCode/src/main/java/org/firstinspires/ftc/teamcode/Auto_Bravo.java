@@ -52,22 +52,34 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Sampling", group="Unused")
+@Autonomous(name="Bravo", group="Autonomous")
 // @Disabled
-public class Autonomous_Sampling extends LinearOpMode {
+public class Auto_Bravo extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor rearLift = null;
+    private Servo dropperServo = null;
     private GoldAlignDetector detector;
 
+    // Clears and resets encoder values
     public void clearDriveEncoders() {
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public void dropClaimBeacon(){
+        // Configurable values
+        double DROPPER_CLOSED_POSITION = 0.9;
+        double DROPPER_OPENED_POSITION = 0.2;
+
+        dropperServo.setPosition(DROPPER_OPENED_POSITION);
+        sleep(500);
+        dropperServo.setPosition(DROPPER_CLOSED_POSITION);
     }
 
     @Override
@@ -79,6 +91,7 @@ public class Autonomous_Sampling extends LinearOpMode {
         leftDrive  = hardwareMap.get(DcMotor.class, "motorLeft");
         rightDrive = hardwareMap.get(DcMotor.class, "motorRight");
         rearLift = hardwareMap.get(DcMotor.class, "rearLift");
+        dropperServo = hardwareMap.get(Servo.class, "dropperServo");
 
         // Set DC motor directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -104,8 +117,8 @@ public class Autonomous_Sampling extends LinearOpMode {
         detector.useDefaults(); // Set detector to use default settings
 
         // Optional tuning
-        detector.alignSize = 100; // How wide (in pixels) is the range in which the gold object will be aligned. (Represented by green bars in the preview)
-        detector.alignPosOffset = 0; // How far from center frame to offset this alignment zone.
+        detector.alignSize = 50; // How wide (in pixels) is the range in which the gold object will be aligned. (Represented by green bars in the preview)
+        detector.alignPosOffset = -40; // How far from center frame to offset this alignment zone.
         detector.downscale = 0.4; // How much to downscale the input frames
 
         detector.areaScoringMethod = DogeCV.AreaScoringMethod.MAX_AREA; // Can also be PERFECT_AREA
@@ -120,29 +133,36 @@ public class Autonomous_Sampling extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
+        double xPosition = detector.getXPosition();
+        telemetry.addData("XPos", xPosition);
+        telemetry.update();
 
         // run until the end of the match (driver presses STOP)
         if (opModeIsActive()) {
-            clearDriveEncoders();
 
             // Lowers the robot from the Lander
             rearLift.setTargetPosition(7500);
             rearLift.setPower(1);
-            sleep(6000);
+            sleep(3500);
+            rearLift.setPower(0);
 
             // Shimmy forward
-            leftDrive.setTargetPosition(100);
+            leftDrive.setTargetPosition(-200);
             rightDrive.setTargetPosition(800);
-            leftDrive.setPower(0.5);
-            rightDrive.setPower(0.5);
+            leftDrive.setPower(-0.25);
+            rightDrive.setPower(0.25);
             sleep(2000);
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
             clearDriveEncoders();
 
             // Retract the shaft
             rearLift.setTargetPosition(10);
             rearLift.setPower(-1);
+            sleep(1000);
 
             // Aim towards target
+
             leftDrive.setTargetPosition(800);
             rightDrive.setTargetPosition(-200);
             leftDrive.setPower(0.25);
@@ -152,23 +172,102 @@ public class Autonomous_Sampling extends LinearOpMode {
             rightDrive.setPower(0);
             clearDriveEncoders();
 
-            /*
-            // Drive forward to crater
-            clearDriveEncoders();
-            leftDrive.setTargetPosition(3500);
-            rightDrive.setTargetPosition(3500);
-            leftDrive.setPower(0.75);
-            rightDrive.setPower(0.75);
+            if (xPosition > 500){
+                // Push gold block
+                leftDrive.setTargetPosition(900);
+                rightDrive.setTargetPosition(100);
+                leftDrive.setPower(0.5);
+                rightDrive.setPower(0.5);
+                sleep(2000);
+                clearDriveEncoders();
+                leftDrive.setTargetPosition(1800);
+                rightDrive.setTargetPosition(1800);
+                sleep(2000);
+                rightDrive.setTargetPosition(2200);
+                sleep(2000);
+                clearDriveEncoders();
+                leftDrive.setTargetPosition(1700);
+                rightDrive.setTargetPosition(1700);
+                sleep(2000);
+                rightDrive.setTargetPosition(2000);
+                sleep(1000);
+                dropClaimBeacon();
+                leftDrive.setTargetPosition(1000);
+                sleep(1000);
+                leftDrive.setPower(-0.5);
+                rightDrive.setPower(-0.5);
+                sleep(2000);
+                clearDriveEncoders();
+                leftDrive.setTargetPosition(-6500);
+                rightDrive.setTargetPosition(-6500);
 
-            // Sleep
+            } else if (xPosition > 250) {
+                // Drive to claim area
+                leftDrive.setTargetPosition(4000);
+                rightDrive.setTargetPosition(4000);
+                rightDrive.setPower(0.5);
+                leftDrive.setPower(0.5);
+                sleep(4000);
+                dropClaimBeacon();
+
+                // Turn towards crater
+                leftDrive.setTargetPosition(6600);
+                sleep(3000);
+                clearDriveEncoders();
+
+                // Drive to crater
+                leftDrive.setTargetPosition(7000);
+                rightDrive.setTargetPosition(7000);
+
+            } else {
+                // Turn towards block
+                leftDrive.setTargetPosition(100);
+                rightDrive.setTargetPosition(700);
+                rightDrive.setPower(0.5);
+                leftDrive.setPower(0.5);
+                sleep(2000);
+                clearDriveEncoders();
+
+                // Turn towards claim area
+                leftDrive.setTargetPosition(1500);
+                rightDrive.setTargetPosition(1500);
+                sleep(2000);
+                leftDrive.setTargetPosition(2500);
+                sleep(3000);
+                clearDriveEncoders();
+
+                // Drive towards claim area
+                leftDrive.setTargetPosition(1700);
+                rightDrive.setTargetPosition(1700);
+                sleep(2000);
+                dropClaimBeacon();
+                sleep(2000);
+
+                // Turn towards crater
+                leftDrive.setTargetPosition(3200);
+                sleep(3000);
+                clearDriveEncoders();
+                leftDrive.setTargetPosition(1100);
+                rightDrive.setTargetPosition(1100);
+                sleep(1500);
+                leftDrive.setTargetPosition(2000);
+                sleep(2000);
+                clearDriveEncoders();
+
+                // Drive to crater
+                rightDrive.setPower(0.75);
+                leftDrive.setPower(0.75);
+                leftDrive.setTargetPosition(8500);
+                rightDrive.setTargetPosition(8500);
+            }
+
             sleep(20000);
-            */
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Lift Position", rearLift.getCurrentPosition());
-            telemetry.addData("Gold position", detector.getXPosition());
             telemetry.update();
         }
+
     }
 }

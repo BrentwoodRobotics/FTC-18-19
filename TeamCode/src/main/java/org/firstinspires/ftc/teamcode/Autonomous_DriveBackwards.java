@@ -51,7 +51,7 @@ import com.disnodeteam.dogecv.detectors.roverrukus.SamplingOrderDetector;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Drive Backwards", group="Autonomous")
+@Autonomous(name="Drive Backwards", group="Unused")
 // @Disabled
 public class Autonomous_DriveBackwards extends LinearOpMode {
 

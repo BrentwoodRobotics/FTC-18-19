@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -58,7 +59,8 @@ public class TeleOp_Development extends OpMode
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor rearLift = null;
-    private Servo dropperServo = null;
+    private DcMotor armRotation = null;
+    private Servo armExtention = null;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -69,21 +71,26 @@ public class TeleOp_Development extends OpMode
         leftDrive  = hardwareMap.get(DcMotor.class, "motorLeft");
         rightDrive = hardwareMap.get(DcMotor.class, "motorRight");
         rearLift = hardwareMap.get(DcMotor.class, "rearLift");
-        dropperServo = hardwareMap.get(Servo.class, "dropperServo");
+        armRotation = hardwareMap.get(DcMotor.class, "armRotation");
+        armExtention = hardwareMap.get(Servo.class, "armExtention");
 
         // Set DC motor directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
         rearLift.setDirection(DcMotor.Direction.FORWARD);
+        armRotation.setDirection(DcMotor.Direction.REVERSE);
 
         // Set DC motor zero-power behavior
         leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rearLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Clear encoder data
         rearLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rearLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        armRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -114,8 +121,8 @@ public class TeleOp_Development extends OpMode
     @Override
     public void loop() {
         // Configurable values
-        double DROPPER_CLOSED_POSITION = 0.2;
-        double DROPPER_OPENED_POSITION = 0.8;
+        double DROPPER_CLOSED_POSITION = 0.9;
+        double DROPPER_OPENED_POSITION = 0.2;
         double LIFT_UP_POWER = 1;
         double LIFT_DOWN_POWER = -1;
         double SPEED_BOOSTER = 1;
@@ -126,6 +133,7 @@ public class TeleOp_Development extends OpMode
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower;
         double rightPower;
+        double armRoationPower;
 
         // Adds the boost button
         double speedModifier;
@@ -137,13 +145,15 @@ public class TeleOp_Development extends OpMode
             speedModifier = SPEED_DEFAULT;
         }
 
-        // Calculate power for drive wheels
+        // Calculate power for drive wheels (Gamepad 1)
         leftPower  = -gamepad1.left_stick_y / speedModifier;
         rightPower = -gamepad1.right_stick_y / speedModifier;
+        armRoationPower = -gamepad2.right_stick_y / 5;
 
         // Send calculated power to wheels
         leftDrive.setPower(leftPower);
         rightDrive.setPower(rightPower);
+        armRotation.setPower(armRoationPower);
 
         // Moves the lift up and down
         if (gamepad2.dpad_up){
@@ -155,11 +165,13 @@ public class TeleOp_Development extends OpMode
         }
 
         // Control the dropper servo
-        double dropperServoPos = dropperServo.getPosition();
-        if (gamepad2.x){
-            dropperServo.setPosition(DROPPER_CLOSED_POSITION);
-        } else if (gamepad2.b){
-            dropperServo.setPosition(DROPPER_OPENED_POSITION);
+        double armExtentionPos = armExtention.getPosition();
+        if (gamepad2.left_bumper){
+            armExtention.setPosition(1);
+        } else if (gamepad2.right_bumper){
+            armExtention.setPosition(0);
+        } else {
+            armExtention.setPosition(0.5);
         }
 
         // Clears encoder values (for testing/debugging purposes ONLY)
@@ -176,15 +188,23 @@ public class TeleOp_Development extends OpMode
         int leftWheelPos = leftDrive.getCurrentPosition();
         int rightWheelPos = rightDrive.getCurrentPosition();
         int rearLiftPos = rearLift.getCurrentPosition();
-        dropperServoPos = dropperServo.getPosition();
 
         // Send data back to the Driver Station
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-        telemetry.addData("Servo Position", dropperServoPos);
+        telemetry.addData("Arm Extention", armExtentionPos);
         telemetry.addData("Rear Lift Position", rearLiftPos);
         telemetry.addData("Left Wheel Position", leftWheelPos);
         telemetry.addData("Right Wheel Position", rightWheelPos);
+        telemetry.addData("Controller inp left", gamepad1.left_stick_y);
+        telemetry.addData("Controller inp right", gamepad1.right_stick_y);
+        if (gamepad2.left_bumper){
+            telemetry.addData("Arm Extention", "Backward");
+        } else if (gamepad2.right_bumper){
+            telemetry.addData("Arm Extention", "Forward");
+        } else {
+            telemetry.addData("Arm Extention", "Off");
+        }
     }
 
     /*

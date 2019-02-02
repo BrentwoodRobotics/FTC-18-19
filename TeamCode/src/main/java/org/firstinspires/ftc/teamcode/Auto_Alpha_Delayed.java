@@ -29,9 +29,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.disnodeteam.dogecv.CameraViewDisplay;
-import com.disnodeteam.dogecv.DogeCV;
-import com.disnodeteam.dogecv.detectors.roverrukus.GoldAlignDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -52,16 +49,15 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Sampling", group="Unused")
+@Autonomous(name="Alpha Delayed", group="Autonomous Delayed")
 // @Disabled
-public class Autonomous_Sampling extends LinearOpMode {
+public class Auto_Alpha_Delayed extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor rearLift = null;
-    private GoldAlignDetector detector;
 
     public void clearDriveEncoders() {
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -98,32 +94,13 @@ public class Autonomous_Sampling extends LinearOpMode {
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        // Set up detector
-        detector = new GoldAlignDetector(); // Create detector
-        detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance(), 1, false); // Initialize it with the app context and camera
-        detector.useDefaults(); // Set detector to use default settings
-
-        // Optional tuning
-        detector.alignSize = 100; // How wide (in pixels) is the range in which the gold object will be aligned. (Represented by green bars in the preview)
-        detector.alignPosOffset = 0; // How far from center frame to offset this alignment zone.
-        detector.downscale = 0.4; // How much to downscale the input frames
-
-        detector.areaScoringMethod = DogeCV.AreaScoringMethod.MAX_AREA; // Can also be PERFECT_AREA
-        //detector.perfectAreaScorer.perfectArea = 10000; // if using PERFECT_AREA scoring
-        detector.maxAreaScorer.weight = 0.005; //
-
-        detector.ratioScorer.weight = 5; //
-        detector.ratioScorer.perfectRatio = 1.0; // Ratio adjustment
-
-        detector.enable(); // Start the detector!
-
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
+        sleep(10000);
 
         // run until the end of the match (driver presses STOP)
         if (opModeIsActive()) {
-            clearDriveEncoders();
 
             // Lowers the robot from the Lander
             rearLift.setTargetPosition(7500);
@@ -143,8 +120,8 @@ public class Autonomous_Sampling extends LinearOpMode {
             rearLift.setPower(-1);
 
             // Aim towards target
-            leftDrive.setTargetPosition(800);
-            rightDrive.setTargetPosition(-200);
+            leftDrive.setTargetPosition(950);
+            rightDrive.setTargetPosition(-300);
             leftDrive.setPower(0.25);
             rightDrive.setPower(-0.25);
             sleep(2000);
@@ -152,7 +129,6 @@ public class Autonomous_Sampling extends LinearOpMode {
             rightDrive.setPower(0);
             clearDriveEncoders();
 
-            /*
             // Drive forward to crater
             clearDriveEncoders();
             leftDrive.setTargetPosition(3500);
@@ -162,12 +138,10 @@ public class Autonomous_Sampling extends LinearOpMode {
 
             // Sleep
             sleep(20000);
-            */
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Lift Position", rearLift.getCurrentPosition());
-            telemetry.addData("Gold position", detector.getXPosition());
             telemetry.update();
         }
     }

@@ -52,7 +52,7 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="BasicDrop", group="Autonomous")
+@Autonomous(name="BasicDrop", group="Unused")
 // @Disabled
 public class Autonomous_BasicDrop extends LinearOpMode {
 
@@ -105,7 +105,7 @@ public class Autonomous_BasicDrop extends LinearOpMode {
             sleep(6000);
 
             // Shimmy forward
-            leftDrive.setTargetPosition(100);
+            leftDrive.setTargetPosition(-200);
             rightDrive.setTargetPosition(800);
             leftDrive.setPower(0.5);
             rightDrive.setPower(0.5);

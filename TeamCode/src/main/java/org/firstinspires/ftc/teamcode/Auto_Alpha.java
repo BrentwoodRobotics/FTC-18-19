@@ -29,6 +29,9 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.disnodeteam.dogecv.CameraViewDisplay;
+import com.disnodeteam.dogecv.DogeCV;
+import com.disnodeteam.dogecv.detectors.roverrukus.GoldAlignDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -49,18 +52,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Charlie", group="Autonomous")
+@Autonomous(name="Alpha", group="Autonomous")
 // @Disabled
-public class Autonomous_Charlie extends LinearOpMode {
+public class Auto_Alpha extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor rearLift = null;
-    private Servo dropperServo = null;
 
-    // Clears and resets encoder values
     public void clearDriveEncoders() {
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -77,7 +78,6 @@ public class Autonomous_Charlie extends LinearOpMode {
         leftDrive  = hardwareMap.get(DcMotor.class, "motorLeft");
         rightDrive = hardwareMap.get(DcMotor.class, "motorRight");
         rearLift = hardwareMap.get(DcMotor.class, "rearLift");
-        dropperServo = hardwareMap.get(Servo.class, "dropperServo");
 
         // Set DC motor directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -103,21 +103,17 @@ public class Autonomous_Charlie extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         if (opModeIsActive()) {
-            // Configurable values
-            double DROPPER_CLOSED_POSITION = 0.2;
-            double DROPPER_OPENED_POSITION = 0.8;
 
             // Lowers the robot from the Lander
             rearLift.setTargetPosition(7500);
             rearLift.setPower(1);
-            sleep(3500);
-            rearLift.setPower(0);
+            sleep(5500);
 
             // Shimmy forward
-            leftDrive.setTargetPosition(-200);
+            leftDrive.setTargetPosition(100);
             rightDrive.setTargetPosition(800);
-            leftDrive.setPower(-0.25);
-            rightDrive.setPower(0.25);
+            leftDrive.setPower(0.5);
+            rightDrive.setPower(0.5);
             sleep(2000);
             clearDriveEncoders();
 
@@ -126,8 +122,8 @@ public class Autonomous_Charlie extends LinearOpMode {
             rearLift.setPower(-1);
 
             // Aim towards target
-            leftDrive.setTargetPosition(800);
-            rightDrive.setTargetPosition(-200);
+            leftDrive.setTargetPosition(950);
+            rightDrive.setTargetPosition(-300);
             leftDrive.setPower(0.25);
             rightDrive.setPower(-0.25);
             sleep(2000);
@@ -135,47 +131,15 @@ public class Autonomous_Charlie extends LinearOpMode {
             rightDrive.setPower(0);
             clearDriveEncoders();
 
-            // Drive towards target
-            leftDrive.setTargetPosition(3700);
-            rightDrive.setTargetPosition(3700);
-            leftDrive.setPower(1);
-            rightDrive.setPower(1);
-            sleep(4500);
-            leftDrive.setPower(0);
-            rightDrive.setPower(0);
+            // Drive forward to crater
             clearDriveEncoders();
+            leftDrive.setTargetPosition(3500);
+            rightDrive.setTargetPosition(3500);
+            leftDrive.setPower(0.75);
+            rightDrive.setPower(0.75);
 
-            // Release marker
-            dropperServo.setPosition(DROPPER_OPENED_POSITION);
-            sleep(500);
-            dropperServo.setPosition(DROPPER_CLOSED_POSITION);
-
-            // Turn North towards Crater
-            leftDrive.setTargetPosition(1300);
-            rightDrive.setTargetPosition(-1300);
-            leftDrive.setPower(0.5);
-            rightDrive.setPower(-0.5);
-            sleep(3000);
-            leftDrive.setPower(0);
-            rightDrive.setPower(0);
-            clearDriveEncoders();
-
-            // Drive towards Crater
-            leftDrive.setTargetPosition(7000);
-            rightDrive.setTargetPosition(7000);
-            leftDrive.setPower(0.5);
-            rightDrive.setPower(0.5);
-            sleep(1000);
-            leftDrive.setPower(1);
-            rightDrive.setPower(1);
-            sleep(4000);
-            leftDrive.setPower(0.25);
-            rightDrive.setPower(0.25);
-            sleep(8000);
-            leftDrive.setPower(0);
-            rightDrive.setPower(0);
-            clearDriveEncoders();
-            sleep(10000); //Hopefully this will stop if from looping
+            // Sleep
+            sleep(20000);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
