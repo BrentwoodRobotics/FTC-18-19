@@ -40,18 +40,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.RevExtensions2;
-
-import java.util.Locale;
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -66,9 +61,9 @@ import java.util.Locale;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Autonomous Drop Heading MK II", group="Autonomous")
+@Autonomous(name="Sean's Drop w/ Heading", group="Autonomous")
 // @Disabled
-public class NewHeadingAuto extends LinearOpMode {
+public class SeanHeadingAuto extends LinearOpMode {
 
     // Declare OpMode members.
     ExpansionHubEx expansionHub;
@@ -95,24 +90,62 @@ public class NewHeadingAuto extends LinearOpMode {
         sleep(300);
     }
 
-    public void dropClaimBeacon() {
-        telemetry.addData("dropClaimBeacon", "()");
-        telemetry.update();
-        // Extend arm
-        armExtension.setPosition(0);
-        sleep(3000);
-        armExtension.setPosition(0.5);
-        // Rotate arm forward
-        telemetry.addData("Arm", "Extended");
-        telemetry.update();
-        armRotation.setTargetPosition(-1000);
+    public double getCurrentHeading() {
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double currentHeading = angles.firstAngle;
+        return currentHeading;
+    }
+
+    public void driveWithoutEncoders() {
+        leftDrive.setPower(0);
+        rightDrive.setPower(0);
+        leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void setDrivePower(double power) {
+        leftDrive.setPower(power);
+        rightDrive.setPower(power);
+    }
+
+    public void setDriveTarget(int target) {
+        leftDrive.setTargetPosition(target);
+        rightDrive.setTargetPosition(target);
+    }
+
+    public void navigateToHeading(double currentHeading, double targetHeading) {
+        driveWithoutEncoders();
+        // Turn right
+        while (currentHeading > targetHeading + 1 && opModeIsActive()) {
+            leftDrive.setPower(0.2);
+            rightDrive.setPower(-0.2);
+            currentHeading = getCurrentHeading();
+        }
+        // Turn left
+        while (currentHeading < targetHeading - 1 && opModeIsActive()) {
+            leftDrive.setPower(0.2);
+            rightDrive.setPower(-0.2);
+            currentHeading = getCurrentHeading();
+        }
+        setDrivePower(0);
+        clearDriveEncoders();
+    }
+
+    public void dropTeamMarker() {
+        // Rotate arm out
         armRotation.setPower(-0.5);
+        armRotation.setTargetPosition(-900);
         sleep(1000);
         armRotation.setPower(0);
-        armRotation.setTargetPosition(0);
+
+        // Rotate arm up
         armRotation.setPower(0.5);
+        armRotation.setTargetPosition(-450);
         sleep(500);
+
+        // Rotate arm in
         armRotation.setPower(0.25);
+        armRotation.setTargetPosition(-10);
         sleep(500);
         armRotation.setPower(0);
     }
@@ -176,7 +209,7 @@ public class NewHeadingAuto extends LinearOpMode {
         // Get heading while on lander
         angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double startHeading = angles.firstAngle;
-        telemetry.addData("First Angle: ", startHeading);
+        telemetry.addData("Start Heading: ", startHeading);
 
         // Set up detector
         detector = new GoldAlignDetector(); // Create detector
@@ -207,6 +240,7 @@ public class NewHeadingAuto extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         if (opModeIsActive()) {
+            // Turns off DogeCV
             detector.disable();
 
             // Lowers the robot from the Lander
@@ -214,8 +248,8 @@ public class NewHeadingAuto extends LinearOpMode {
             rearLift.setPower(1);
             sleep(5500);
 
-            // Shimmy forward
-            leftDrive.setTargetPosition(100);
+            // Get off lander hook
+            leftDrive.setTargetPosition(-100);
             rightDrive.setTargetPosition(1000);
             leftDrive.setPower(1);
             rightDrive.setPower(1);
@@ -226,14 +260,9 @@ public class NewHeadingAuto extends LinearOpMode {
             rearLift.setTargetPosition(10);
             rearLift.setPower(-1);
 
-            // Gets new heading
+            // Gets new heading -- will soon be deprecated
             angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             double currentHeading = angles.firstAngle;
-
-            leftDrive.setPower(0);
-            rightDrive.setPower(0);
-            leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
             if (xPosition > 500){
                 while (currentHeading > startHeading + -10){
@@ -258,7 +287,7 @@ public class NewHeadingAuto extends LinearOpMode {
                 sleep(2000);
                 rightDrive.setTargetPosition(2000);
                 sleep(1000);
-                dropClaimBeacon();
+                // dropClaimBeacon();
                 leftDrive.setTargetPosition(1000);
                 sleep(1000);
                 leftDrive.setPower(-0.5);
@@ -284,7 +313,7 @@ public class NewHeadingAuto extends LinearOpMode {
                 rightDrive.setPower(0.5);
                 leftDrive.setPower(0.5);
                 sleep(4000);
-                dropClaimBeacon();
+                // dropClaimBeacon();
 
                 // Turn towards crater
                 leftDrive.setTargetPosition(6600);
@@ -297,42 +326,42 @@ public class NewHeadingAuto extends LinearOpMode {
 
             } else {
                 // Turn towards block
-                while (currentHeading > startHeading + 30){
-                    leftDrive.setPower(0.2);
-                    rightDrive.setPower(-0.2);
-                    angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    currentHeading = angles.firstAngle;
-                }
-                leftDrive.setPower(0);
-                rightDrive.setPower(0);
-                clearDriveEncoders();
-                leftDrive.setPower(0.5);
-                rightDrive.setPower(0.5);
+                navigateToHeading(getCurrentHeading(), 30);
 
-                // Turn towards claim area
-                leftDrive.setTargetPosition(2500);
-                rightDrive.setTargetPosition(2500);
-                sleep(2000);
-                leftDrive.setTargetPosition(3500);
-                sleep(1200);
+                // Drive towards Sample Area and extend the Arm
+                telemetry.addData("Arm", "Extending");
+                telemetry.addData("Target", "Gold Block (left)");
+                telemetry.update();
+                setDrivePower(0.5);
+                setDriveTarget(2500);
+                armExtension.setPosition(0);
+                sleep(3000);
+                armExtension.setPosition(0.5);
+                setDrivePower(0);
                 clearDriveEncoders();
 
-                // Drive towards claim area
-                leftDrive.setTargetPosition(1400);
-                rightDrive.setTargetPosition(1400);
-                sleep(1700);
-                dropClaimBeacon();
+                // Turn towards Depot
+                telemetry.addData("Arm", "Extended");
+                telemetry.addData("Target", "Depot");
+                telemetry.update();
+                navigateToHeading(getCurrentHeading(), -25);
+
+                // Drive towards Depot
+                setDrivePower(0.6);
+                setDriveTarget(2000);
+                sleep(1500);
+
+                // Release Team Marker
+                telemetry.addData("Arm", "Releasing Marker");
+                telemetry.addData("Target", "Depot");
+                telemetry.update();
+                dropTeamMarker();
 
                 // Turn towards crater
-                leftDrive.setTargetPosition(3000);
-                sleep(2000);
-                clearDriveEncoders();
-                leftDrive.setTargetPosition(1200);
-                rightDrive.setTargetPosition(1200);
-                sleep(1500);
-                leftDrive.setTargetPosition(2000);
-                sleep(2000);
-                clearDriveEncoders();
+                telemetry.addData("Arm", "Returned");
+                telemetry.addData("Target", "Crater");
+                telemetry.update();
+                navigateToHeading(getCurrentHeading(), -135);
 
                 // Drive to crater
                 rightDrive.setPower(0.75);
@@ -342,7 +371,7 @@ public class NewHeadingAuto extends LinearOpMode {
             }
 
             // Sleep
-            sleep(20000);
+            sleep(10000);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());

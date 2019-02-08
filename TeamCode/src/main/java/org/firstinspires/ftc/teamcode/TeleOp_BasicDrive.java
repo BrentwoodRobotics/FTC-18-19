@@ -37,6 +37,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.openftc.revextensions2.ExpansionHubEx;
+import org.openftc.revextensions2.RevExtensions2;
+
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
  * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
@@ -56,32 +59,40 @@ import com.qualcomm.robotcore.util.Range;
 public class TeleOp_BasicDrive extends OpMode
 {
     // Declare OpMode members.
+    ExpansionHubEx expansionHub;
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor rearLift = null;
-    private Servo dropperServo = null;
+    private DcMotor armRotation = null;
+    private Servo armExtension = null;
 
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
+        RevExtensions2.init();
+        expansionHub = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 2");
+        expansionHub.setLedColor(0, 255, 0);
         // Establish hardware map using configured device names
         leftDrive  = hardwareMap.get(DcMotor.class, "motorLeft");
         rightDrive = hardwareMap.get(DcMotor.class, "motorRight");
         rearLift = hardwareMap.get(DcMotor.class, "rearLift");
-        dropperServo = hardwareMap.get(Servo.class, "dropperServo");
+        armRotation = hardwareMap.get(DcMotor.class, "armRotation");
+        armExtension = hardwareMap.get(Servo.class, "armExtension");
 
         // Set DC motor directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
         rearLift.setDirection(DcMotor.Direction.FORWARD);
+        armRotation.setDirection(DcMotor.Direction.REVERSE);
 
         // Set DC motor zero-power behavior
         leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rearLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Clear encoder data
         rearLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -164,12 +175,25 @@ public class TeleOp_BasicDrive extends OpMode
             rearLift.setPower(0);
         }
 
-        // Control the dropper servo
-        double dropperServoPos = dropperServo.getPosition();
-        if (gamepad2.b){
-            dropperServo.setPosition(DROPPER_CLOSED_POSITION);
-        } else if (gamepad2.x){
-            dropperServo.setPosition(DROPPER_OPENED_POSITION);
+        // Moves the arm up and down
+        double armModifier;
+        double armRotationPower;
+        if (gamepad2.left_bumper) {
+            armModifier = 4;
+        } else {
+            armModifier = 6;
+        }
+        armRotationPower = gamepad2.left_stick_y / armModifier;
+        armRotation.setPower(armRotationPower);
+
+        // Control the arm extension
+        double armExtensionPos = armExtension.getPosition();
+        if (-gamepad2.right_stick_y < 0){
+            armExtension.setPosition(1);
+        } else if (-gamepad2.right_stick_y > 0){
+            armExtension.setPosition(0);
+        } else {
+            armExtension.setPosition(0.5);
         }
 
           // Clears encoder values (for testing/debugging purposes ONLY)
@@ -186,12 +210,10 @@ public class TeleOp_BasicDrive extends OpMode
         int leftWheelPos = leftDrive.getCurrentPosition();
         int rightWheelPos = rightDrive.getCurrentPosition();
         int rearLiftPos = rearLift.getCurrentPosition();
-        dropperServoPos = dropperServo.getPosition();
 
         // Send data back to the Driver Station
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-        telemetry.addData("Servo Position", dropperServoPos);
         telemetry.addData("Rear Lift Position", rearLiftPos);
         telemetry.addData("Left Wheel Position", leftWheelPos);
         telemetry.addData("Right Wheel Position", rightWheelPos);

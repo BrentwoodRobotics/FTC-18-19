@@ -29,12 +29,20 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -60,7 +68,20 @@ public class TeleOp_Development extends OpMode
     private DcMotor rightDrive = null;
     private DcMotor rearLift = null;
     private DcMotor armRotation = null;
-    private Servo armExtention = null;
+    private Servo armExtension = null;
+
+    // The IMU sensor object
+    BNO055IMU imu;
+
+    // State used for updating telemetry
+    Orientation angles;
+    Acceleration gravity;
+
+    public double getCurrentHeading() {
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double currentHeading = angles.firstAngle;
+        return currentHeading;
+    }
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -72,7 +93,7 @@ public class TeleOp_Development extends OpMode
         rightDrive = hardwareMap.get(DcMotor.class, "motorRight");
         rearLift = hardwareMap.get(DcMotor.class, "rearLift");
         armRotation = hardwareMap.get(DcMotor.class, "armRotation");
-        armExtention = hardwareMap.get(Servo.class, "armExtention");
+        armExtension = hardwareMap.get(Servo.class, "armExtension");
 
         // Set DC motor directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -95,6 +116,30 @@ public class TeleOp_Development extends OpMode
         leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        // Set up the parameters with which we will use our IMU. Note that integration
+        // algorithm here just reports accelerations to the logcat log; it doesn't actually
+        // provide positional information.
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
+        // Get heading while on lander
+        angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double startHeading = angles.firstAngle;
+        telemetry.addData("First Angle: ", startHeading);
+        telemetry.addData("Status: ", "Init");
+        telemetry.update();
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -165,13 +210,13 @@ public class TeleOp_Development extends OpMode
         }
 
         // Control the dropper servo
-        double armExtentionPos = armExtention.getPosition();
+        double armExtensionPos = armExtension.getPosition();
         if (gamepad2.left_bumper){
-            armExtention.setPosition(1);
+            armExtension.setPosition(1);
         } else if (gamepad2.right_bumper){
-            armExtention.setPosition(0);
+            armExtension.setPosition(0);
         } else {
-            armExtention.setPosition(0.5);
+            armExtension.setPosition(0.5);
         }
 
         // Clears encoder values (for testing/debugging purposes ONLY)
@@ -192,18 +237,19 @@ public class TeleOp_Development extends OpMode
         // Send data back to the Driver Station
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-        telemetry.addData("Arm Extention", armExtentionPos);
+        telemetry.addData("Heading", getCurrentHeading());
+        telemetry.addData("Arm Extension", armExtensionPos);
         telemetry.addData("Rear Lift Position", rearLiftPos);
         telemetry.addData("Left Wheel Position", leftWheelPos);
         telemetry.addData("Right Wheel Position", rightWheelPos);
         telemetry.addData("Controller inp left", gamepad1.left_stick_y);
         telemetry.addData("Controller inp right", gamepad1.right_stick_y);
         if (gamepad2.left_bumper){
-            telemetry.addData("Arm Extention", "Backward");
+            telemetry.addData("Arm Extension", "Backward");
         } else if (gamepad2.right_bumper){
-            telemetry.addData("Arm Extention", "Forward");
+            telemetry.addData("Arm Extension", "Forward");
         } else {
-            telemetry.addData("Arm Extention", "Off");
+            telemetry.addData("Arm Extension", "Off");
         }
     }
 
