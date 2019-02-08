@@ -87,7 +87,7 @@ public class SeanHeadingAuto extends LinearOpMode {
         leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        sleep(300);
+        sleep(200);
     }
 
     public double getCurrentHeading() {
@@ -115,7 +115,7 @@ public class SeanHeadingAuto extends LinearOpMode {
 
     public void navigateToHeading(double currentHeading, double targetHeading) {
         driveWithoutEncoders();
-        // Turn right
+        // Turn right -- opModeIsActive() hopefully prevents crashes when stopping in while loops
         while (currentHeading > targetHeading + 1 && opModeIsActive()) {
             leftDrive.setPower(0.2);
             rightDrive.setPower(-0.2);
@@ -123,8 +123,8 @@ public class SeanHeadingAuto extends LinearOpMode {
         }
         // Turn left
         while (currentHeading < targetHeading - 1 && opModeIsActive()) {
-            leftDrive.setPower(0.2);
-            rightDrive.setPower(-0.2);
+            leftDrive.setPower(-0.2);
+            rightDrive.setPower(0.2);
             currentHeading = getCurrentHeading();
         }
         setDrivePower(0);
@@ -167,6 +167,9 @@ public class SeanHeadingAuto extends LinearOpMode {
         // Set the Expansion Hub's LED to green
         expansionHub.setLedColor(0, 255, 0);
 
+        // Enable phone charging
+        expansionHub.setPhoneChargeEnabled(true);
+
         // Set DC motor directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -200,9 +203,7 @@ public class SeanHeadingAuto extends LinearOpMode {
         parameters.loggingTag          = "IMU";
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
-        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
-        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
-        // and named "imu".
+        // Retrieve and initialize the IMU
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
 
@@ -238,7 +239,7 @@ public class SeanHeadingAuto extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        // run until the end of the match (driver presses STOP)
+        // Runs when driver presses PLAY
         if (opModeIsActive()) {
             // Turns off DogeCV
             detector.disable();
@@ -260,12 +261,8 @@ public class SeanHeadingAuto extends LinearOpMode {
             rearLift.setTargetPosition(10);
             rearLift.setPower(-1);
 
-            // Gets new heading -- will soon be deprecated
-            angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            double currentHeading = angles.firstAngle;
-
-            if (xPosition > 500){
-                while (currentHeading > startHeading + -10){
+            if (xPosition > 500){   // RIGHT
+                /*while (currentHeading > startHeading + -10){
                     leftDrive.setPower(-0.2);
                     rightDrive.setPower(0.2);
                     angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -295,42 +292,56 @@ public class SeanHeadingAuto extends LinearOpMode {
                 sleep(2000);
                 clearDriveEncoders();
                 leftDrive.setTargetPosition(-6500);
-                rightDrive.setTargetPosition(-6500);
+                rightDrive.setTargetPosition(-6500);*/
+            } else if (xPosition > 250) {   // CENTER
+                // Position towards block
+                navigateToHeading(getCurrentHeading(), 0);
 
-            } else if (xPosition > 250) {
-                while (currentHeading > startHeading + 0.5){
-                    leftDrive.setPower(0.25);
-                    rightDrive.setPower(-0.25);
-                    angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    currentHeading = angles.firstAngle;
-                }
-                leftDrive.setPower(0);
-                rightDrive.setPower(0);
-                // Drive to claim area
+                // Drive towards Sample Area and extend the Arm
+                telemetry.addData("Arm", "Extending");
+                telemetry.addData("Target", "Gold Block (center)");
+                telemetry.addData("Heading", getCurrentHeading());
+                telemetry.update();
+                setDrivePower(0.5);
+                setDriveTarget(4000);
+                armExtension.setPosition(0);
+                sleep(3000);
+                telemetry.addData("Arm", "Extended");
+                telemetry.addData("Target", "Depot");
+                telemetry.addData("Heading", getCurrentHeading());
+                telemetry.update();
+                armExtension.setPosition(0.5);
+                sleep(2000);
+                setDrivePower(0);
                 clearDriveEncoders();
-                leftDrive.setTargetPosition(4000);
-                rightDrive.setTargetPosition(4000);
-                rightDrive.setPower(0.5);
-                leftDrive.setPower(0.5);
-                sleep(4000);
-                // dropClaimBeacon();
+
+                // Release Team Marker
+                telemetry.addData("Arm", "Releasing Marker");
+                telemetry.addData("Target", "Depot");
+                telemetry.addData("Heading", getCurrentHeading());
+                telemetry.update();
+                dropTeamMarker();
 
                 // Turn towards crater
-                leftDrive.setTargetPosition(6600);
-                sleep(3000);
-                clearDriveEncoders();
+                navigateToHeading(getCurrentHeading(), -135);
+                telemetry.addData("Arm", "Returned");
+                telemetry.addData("Target", "Crater");
+                telemetry.addData("Heading", getCurrentHeading());
+                telemetry.update();
 
                 // Drive to crater
-                leftDrive.setTargetPosition(7000);
-                rightDrive.setTargetPosition(7000);
-
-            } else {
+                rightDrive.setPower(0.75);
+                leftDrive.setPower(0.75);
+                leftDrive.setTargetPosition(4500);
+                rightDrive.setTargetPosition(4500);
+            } else {        // LEFT (or undetermined)
                 // Turn towards block
                 navigateToHeading(getCurrentHeading(), 30);
 
                 // Drive towards Sample Area and extend the Arm
                 telemetry.addData("Arm", "Extending");
                 telemetry.addData("Target", "Gold Block (left)");
+                telemetry.addData("Heading", getCurrentHeading());
                 telemetry.update();
                 setDrivePower(0.5);
                 setDriveTarget(2500);
@@ -341,10 +352,11 @@ public class SeanHeadingAuto extends LinearOpMode {
                 clearDriveEncoders();
 
                 // Turn towards Depot
+                navigateToHeading(getCurrentHeading(), -25);
                 telemetry.addData("Arm", "Extended");
                 telemetry.addData("Target", "Depot");
+                telemetry.addData("Heading", getCurrentHeading());
                 telemetry.update();
-                navigateToHeading(getCurrentHeading(), -25);
 
                 // Drive towards Depot
                 setDrivePower(0.6);
@@ -354,14 +366,16 @@ public class SeanHeadingAuto extends LinearOpMode {
                 // Release Team Marker
                 telemetry.addData("Arm", "Releasing Marker");
                 telemetry.addData("Target", "Depot");
+                telemetry.addData("Heading", getCurrentHeading());
                 telemetry.update();
                 dropTeamMarker();
 
                 // Turn towards crater
+                navigateToHeading(getCurrentHeading(), -135);
                 telemetry.addData("Arm", "Returned");
                 telemetry.addData("Target", "Crater");
+                telemetry.addData("Heading", getCurrentHeading());
                 telemetry.update();
-                navigateToHeading(getCurrentHeading(), -135);
 
                 // Drive to crater
                 rightDrive.setPower(0.75);
@@ -370,15 +384,8 @@ public class SeanHeadingAuto extends LinearOpMode {
                 rightDrive.setTargetPosition(4500);
             }
 
-            // Sleep
+            // Sleep for safety
             sleep(10000);
-
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Lift Position", rearLift.getCurrentPosition());
-            telemetry.addData("Start Heading", startHeading);
-            telemetry.addData("Land Heading", currentHeading);
-            telemetry.update();
         }
     }
 }
