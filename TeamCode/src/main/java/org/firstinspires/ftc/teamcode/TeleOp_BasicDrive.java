@@ -196,6 +196,16 @@ public class TeleOp_BasicDrive extends OpMode
             armExtension.setPosition(0.5);
         }
 
+        if (gamepad2.y) {
+            armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            armRotation.setTargetPosition(-650);
+            armRotation.setPower(0.75);
+        }
+
+        if (gamepad2.x) {
+            armRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+
           // Clears encoder values (for testing/debugging purposes ONLY)
         if (gamepad2.back) {
             rearLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

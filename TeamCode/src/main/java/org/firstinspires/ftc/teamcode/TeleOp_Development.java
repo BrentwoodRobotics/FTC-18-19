@@ -178,7 +178,7 @@ public class TeleOp_Development extends OpMode
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower;
         double rightPower;
-        double armRoationPower;
+        double armRotationPower;
 
         // Adds the boost button
         double speedModifier;
@@ -193,12 +193,27 @@ public class TeleOp_Development extends OpMode
         // Calculate power for drive wheels (Gamepad 1)
         leftPower  = -gamepad1.left_stick_y / speedModifier;
         rightPower = -gamepad1.right_stick_y / speedModifier;
-        armRoationPower = -gamepad2.right_stick_y / 5;
+
+        // Calculate power for arm
+        armRotationPower = -gamepad2.right_stick_y / 5;
 
         // Send calculated power to wheels
         leftDrive.setPower(leftPower);
         rightDrive.setPower(rightPower);
-        armRotation.setPower(armRoationPower);
+
+        // Send calculated power to arm
+        armRotation.setPower(armRotationPower);
+
+        // Makes the arm vertical
+        if (gamepad2.y) {
+            armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            armRotation.setTargetPosition(-650);
+            armRotation.setPower(0.75);
+        }
+
+        if (gamepad2.x) {
+            armRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
 
         // Moves the lift up and down
         if (gamepad2.dpad_up){
@@ -233,12 +248,14 @@ public class TeleOp_Development extends OpMode
         int leftWheelPos = leftDrive.getCurrentPosition();
         int rightWheelPos = rightDrive.getCurrentPosition();
         int rearLiftPos = rearLift.getCurrentPosition();
+        int armRotationPos = armRotation.getCurrentPosition();
 
         // Send data back to the Driver Station
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
         telemetry.addData("Heading", getCurrentHeading());
         telemetry.addData("Arm Extension", armExtensionPos);
+        telemetry.addData("Arm Rotation", armRotationPos);
         telemetry.addData("Rear Lift Position", rearLiftPos);
         telemetry.addData("Left Wheel Position", leftWheelPos);
         telemetry.addData("Right Wheel Position", rightWheelPos);
