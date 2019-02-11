@@ -35,6 +35,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
@@ -61,7 +62,7 @@ import java.util.Locale;
  */
 
 @Autonomous(name="Autonomous Drop Heading", group="Autonomous")
-// @Disabled
+@Disabled
 public class Autonomous_DropWithHeading extends LinearOpMode {
 
     // Declare OpMode members.

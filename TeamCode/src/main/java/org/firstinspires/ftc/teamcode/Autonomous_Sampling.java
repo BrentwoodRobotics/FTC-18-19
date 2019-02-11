@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.disnodeteam.dogecv.CameraViewDisplay;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.disnodeteam.dogecv.DogeCV;
 import com.disnodeteam.dogecv.detectors.roverrukus.GoldAlignDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -53,7 +54,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @Autonomous(name="Sampling", group="Unused")
-// @Disabled
+@Disabled
 public class Autonomous_Sampling extends LinearOpMode {
 
     // Declare OpMode members.

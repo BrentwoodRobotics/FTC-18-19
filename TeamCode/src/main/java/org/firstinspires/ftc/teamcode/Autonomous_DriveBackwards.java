@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.disnodeteam.dogecv.scoring.MaxAreaScorer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -52,7 +53,7 @@ import com.disnodeteam.dogecv.detectors.roverrukus.SamplingOrderDetector;
  */
 
 @Autonomous(name="Drive Backwards", group="Unused")
-// @Disabled
+@Disabled
 public class Autonomous_DriveBackwards extends LinearOpMode {
 
     // Declare OpMode members.

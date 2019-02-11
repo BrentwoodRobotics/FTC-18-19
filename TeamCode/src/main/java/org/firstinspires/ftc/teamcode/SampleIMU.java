@@ -73,7 +73,7 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @Autonomous(name="IMU", group="IMU")
-//@Disabled
+@Disabled
 public class SampleIMU extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
