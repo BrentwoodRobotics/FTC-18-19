@@ -61,9 +61,9 @@ import org.openftc.revextensions2.RevExtensions2;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Sean's Drop w/ Heading", group="Autonomous")
+@Autonomous(name="Drop Without Parking", group="Autonomous")
 // @Disabled
-public class SeanHeadingAuto extends LinearOpMode {
+public class DropWithoutParking extends LinearOpMode {
 
     // Declare OpMode members.
     ExpansionHubEx expansionHub;
@@ -232,11 +232,14 @@ public class SeanHeadingAuto extends LinearOpMode {
         detector.enable(); // Start the detector!
 
         // Wait for the game to start (driver presses PLAY)
+        telemetry.addData("Block Position", detector.getXPosition());
+        telemetry.addData("Status: ", "Initialized");
+        telemetry.update();
+        waitForStart();
         double xPosition = detector.getXPosition();
         telemetry.addData("Block Position", xPosition);
         telemetry.addData("Status: ", "Initialized");
         telemetry.update();
-        waitForStart();
         runtime.reset();
 
         // Runs when driver presses PLAY
@@ -262,37 +265,42 @@ public class SeanHeadingAuto extends LinearOpMode {
             rearLift.setPower(-1);
 
             if (xPosition > 500){   // RIGHT
-                /*while (currentHeading > startHeading + -10){
-                    leftDrive.setPower(-0.2);
-                    rightDrive.setPower(0.2);
-                    angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    currentHeading = angles.firstAngle;
-                }
-                leftDrive.setPower(0);
-                rightDrive.setPower(0);
-                // Push gold block              <-- lol one comment for these 20+ lines
-                sleep(2000);
+                // Turn towards block
+                navigateToHeading(getCurrentHeading(), -30);
+
+                // Drive towards Sample Area and extend the Arm
+                telemetry.addData("Arm", "Extending");
+                telemetry.addData("Target", "Gold Block (left)");
+                telemetry.addData("Heading", getCurrentHeading());
+                telemetry.update();
+                setDrivePower(0.5);
+                setDriveTarget(2500);
+                armExtension.setPosition(0);
+                sleep(3000);
+                armExtension.setPosition(0.5);
+                setDrivePower(0);
                 clearDriveEncoders();
-                leftDrive.setTargetPosition(1800);
-                rightDrive.setTargetPosition(1800);
-                sleep(2000);
-                rightDrive.setTargetPosition(2200);
-                sleep(2000);
-                clearDriveEncoders();
-                leftDrive.setTargetPosition(1700);
-                rightDrive.setTargetPosition(1700);
-                sleep(2000);
-                rightDrive.setTargetPosition(2000);
-                sleep(1000);
-                // dropClaimBeacon();
-                leftDrive.setTargetPosition(1000);
-                sleep(1000);
-                leftDrive.setPower(-0.5);
-                rightDrive.setPower(-0.5);
-                sleep(2000);
-                clearDriveEncoders();
-                leftDrive.setTargetPosition(-6500);
-                rightDrive.setTargetPosition(-6500);*/
+
+                // Turn towards Depot
+                navigateToHeading(getCurrentHeading(), 20);
+                telemetry.addData("Arm", "Extended");
+                telemetry.addData("Target", "Depot");
+                telemetry.addData("Heading", getCurrentHeading());
+                telemetry.update();
+
+                // Drive towards Depot
+                setDrivePower(0.6);
+                setDriveTarget(2250);
+                sleep(1500);
+
+                // Release Team Marker
+                telemetry.addData("Arm", "Releasing Marker");
+                telemetry.addData("Target", "Depot");
+                telemetry.addData("Heading", getCurrentHeading());
+                telemetry.update();
+                dropTeamMarker();
+                sleep(500);
+
             } else if (xPosition > 250) {   // CENTER
                 // Position towards block
                 navigateToHeading(getCurrentHeading(), 0);
@@ -321,19 +329,6 @@ public class SeanHeadingAuto extends LinearOpMode {
                 telemetry.addData("Heading", getCurrentHeading());
                 telemetry.update();
                 dropTeamMarker();
-
-                // Turn towards crater
-                navigateToHeading(getCurrentHeading(), -135);
-                telemetry.addData("Arm", "Returned");
-                telemetry.addData("Target", "Crater");
-                telemetry.addData("Heading", getCurrentHeading());
-                telemetry.update();
-
-                // Drive to crater
-                rightDrive.setPower(0.75);
-                leftDrive.setPower(0.75);
-                leftDrive.setTargetPosition(4500);
-                rightDrive.setTargetPosition(4500);
             } else {        // LEFT (or undetermined)
                 // Turn towards block
                 navigateToHeading(getCurrentHeading(), 30);
@@ -360,7 +355,7 @@ public class SeanHeadingAuto extends LinearOpMode {
 
                 // Drive towards Depot
                 setDrivePower(0.6);
-                setDriveTarget(2000);
+                setDriveTarget(2250);
                 sleep(1500);
 
                 // Release Team Marker
@@ -369,23 +364,18 @@ public class SeanHeadingAuto extends LinearOpMode {
                 telemetry.addData("Heading", getCurrentHeading());
                 telemetry.update();
                 dropTeamMarker();
-
-                // Turn towards crater
-                navigateToHeading(getCurrentHeading(), -135);
-                telemetry.addData("Arm", "Returned");
-                telemetry.addData("Target", "Crater");
-                telemetry.addData("Heading", getCurrentHeading());
-                telemetry.update();
-
-                // Drive to crater
-                rightDrive.setPower(0.75);
-                leftDrive.setPower(0.75);
-                leftDrive.setTargetPosition(4500);
-                rightDrive.setTargetPosition(4500);
+                sleep(500);
             }
 
+            // Drive Backwards
+            setDrivePower(-0.6);
+            setDriveTarget(0);
+            telemetry.addData("Target", "Return");
+            telemetry.addData("Heading", getCurrentHeading());
+            telemetry.update();
+
             // Sleep for safety
-            sleep(10000);
+            sleep(20000);
         }
     }
 }
