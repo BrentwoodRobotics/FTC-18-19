@@ -301,7 +301,7 @@ public class DropWithoutParking extends LinearOpMode {
                 dropTeamMarker();
                 sleep(500);
 
-            } else if (xPosition > 250) {   // CENTER
+            } else if (xPosition > 200) {   // CENTER
                 // Position towards block
                 navigateToHeading(getCurrentHeading(), 0);
 

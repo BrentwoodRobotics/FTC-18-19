@@ -66,6 +66,7 @@ public class TeleOp_BasicDrive extends OpMode
     private DcMotor rearLift = null;
     private DcMotor armRotation = null;
     private Servo armExtension = null;
+    private Servo cupRotate = null;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -81,6 +82,7 @@ public class TeleOp_BasicDrive extends OpMode
         rearLift = hardwareMap.get(DcMotor.class, "rearLift");
         armRotation = hardwareMap.get(DcMotor.class, "armRotation");
         armExtension = hardwareMap.get(Servo.class, "armExtension");
+        cupRotate = hardwareMap.get(Servo.class, "cupRotate");
 
         // Set DC motor directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -179,14 +181,17 @@ public class TeleOp_BasicDrive extends OpMode
         double armModifier;
         double armRotationPower;
         if (gamepad2.left_bumper) {
-            armModifier = 4;
+            armModifier = 2.5;
+        } else if (gamepad2.right_bumper) {
+            armModifier = 7;
         } else {
-            armModifier = 6;
+            armModifier = 5;
         }
         armRotationPower = gamepad2.left_stick_y / armModifier;
         armRotation.setPower(armRotationPower);
 
-        // Control the arm extension
+
+        // Control the arm extension - GAMEPAD 2
         double armExtensionPos = armExtension.getPosition();
         if (-gamepad2.right_stick_y < 0){
             armExtension.setPosition(1);
@@ -196,17 +201,37 @@ public class TeleOp_BasicDrive extends OpMode
             armExtension.setPosition(0.5);
         }
 
-        if (gamepad2.y) {
-            armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            armRotation.setTargetPosition(-650);
-            armRotation.setPower(0.75);
+        // Control the arm extension - GAMEPAD 1
+        if (gamepad1.right_trigger < 0){
+            armExtension.setPosition(1);
+        } else if (gamepad1.left_trigger > 0){
+            armExtension.setPosition(0);
+        } else {
+            armExtension.setPosition(0.5);
         }
 
+        /*
         if (gamepad2.x) {
-            armRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            //pick up
+            cupRotate.setPosition(cupRotate.getPosition() + 0.01);
+        } else if (gamepad2.b){
+            //dump
+            cupRotate.setPosition(cupRotate.getPosition() - 0.01);
+        }
+        */
+
+        // Control the cup
+        if (gamepad2.x) {
+            //pick up
+            cupRotate.setPosition(1);
+        } else if (gamepad2.b){
+            //dump
+            cupRotate.setPosition(0);
+        } else {
+            cupRotate.setPosition(0.49);
         }
 
-          // Clears encoder values (for testing/debugging purposes ONLY)
+        /* Clears encoder values (for testing/debugging purposes ONLY)
         if (gamepad2.back) {
             rearLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rearLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -214,7 +239,7 @@ public class TeleOp_BasicDrive extends OpMode
             leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        }
+        }*/
 
         // Pull position/encoder values for telemetry
         int leftWheelPos = leftDrive.getCurrentPosition();

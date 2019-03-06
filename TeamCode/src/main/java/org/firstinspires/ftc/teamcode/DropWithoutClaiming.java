@@ -280,7 +280,7 @@ public class DropWithoutClaiming extends LinearOpMode {
                 armExtension.setPosition(0.5);
                 setDrivePower(0);
                 clearDriveEncoders();
-            } else if (xPosition > 250) {   // CENTER
+            } else if (xPosition > 200) {   // CENTER
                 // Position towards block
                 navigateToHeading(getCurrentHeading(), 0);
 

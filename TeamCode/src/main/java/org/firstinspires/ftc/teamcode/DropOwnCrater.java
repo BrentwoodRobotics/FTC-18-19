@@ -318,7 +318,7 @@ public class DropOwnCrater extends LinearOpMode {
                 armExtension.setPosition(0);
                 sleep(3000);
                 armExtension.setPosition(0.5);
-            } else if (xPosition > 250) {   // CENTER
+            } else if (xPosition > 200) {   // CENTER
                 // Position towards block
                 navigateToHeading(getCurrentHeading(), 0);
 

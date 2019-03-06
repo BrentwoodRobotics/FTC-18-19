@@ -325,7 +325,7 @@ public class DropOpponentCrater extends LinearOpMode {
                 leftDrive.setPower(-0.75);
                 leftDrive.setTargetPosition(-6000);
                 rightDrive.setTargetPosition(-6000);
-            } else if (xPosition > 250) {   // CENTER
+            } else if (xPosition > 200) {   // CENTER
                 // Position towards block
                 navigateToHeading(getCurrentHeading(), 0);
 
