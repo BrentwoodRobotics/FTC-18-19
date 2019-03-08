@@ -191,9 +191,9 @@ public class TeleOp_BasicDrive extends OpMode
         armRotation.setPower(armRotationPower);
 
 
-        // Control the arm extension - GAMEPAD 2
+        // Control the arm extension - GAMEPAD 1 AND 2
         double armExtensionPos = armExtension.getPosition();
-        if (-gamepad2.right_stick_y < 0){
+        if (-gamepad2.right_stick_y < 0) {
             armExtension.setPosition(1);
         } else if (-gamepad2.right_stick_y > 0){
             armExtension.setPosition(0);
@@ -201,26 +201,34 @@ public class TeleOp_BasicDrive extends OpMode
             armExtension.setPosition(0.5);
         }
 
-        // Control the arm extension - GAMEPAD 1
+        /* Control the arm extension - GAMEPAD 1
         if (gamepad1.right_trigger < 0){
             armExtension.setPosition(1);
         } else if (gamepad1.left_trigger > 0){
             armExtension.setPosition(0);
         } else {
             armExtension.setPosition(0.5);
-        }
+        } */
 
-        /*
+        // Cup Position - Positional
         if (gamepad2.x) {
             //pick up
-            cupRotate.setPosition(cupRotate.getPosition() + 0.01);
+            cupRotate.setPosition(cupRotate.getPosition() + 0.015);
         } else if (gamepad2.b){
             //dump
-            cupRotate.setPosition(cupRotate.getPosition() - 0.01);
+            cupRotate.setPosition(cupRotate.getPosition() - 0.015);
         }
-        */
 
-        // Control the cup
+        /* Cup Position - Probably useless
+        if (gamepad2.x) {
+            //pick up
+            cupRotate.setPosition(1);
+        } else if (gamepad2.b) {
+            //dump
+            cupRotate.setPosition(-1);
+        } */
+
+        /* Cup - CR
         if (gamepad2.x) {
             //pick up
             cupRotate.setPosition(1);
@@ -229,7 +237,7 @@ public class TeleOp_BasicDrive extends OpMode
             cupRotate.setPosition(0);
         } else {
             cupRotate.setPosition(0.49);
-        }
+        }*/
 
         /* Clears encoder values (for testing/debugging purposes ONLY)
         if (gamepad2.back) {

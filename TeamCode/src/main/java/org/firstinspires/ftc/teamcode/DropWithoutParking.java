@@ -82,6 +82,10 @@ public class DropWithoutParking extends LinearOpMode {
     Orientation angles;
     Acceleration gravity;
 
+    /**
+     * Clears the drive encoders for both motors at the same time for coding ease
+     * Due to complications with the time it takes to change run modes we added a .2 second sleep
+     */
     public void clearDriveEncoders() {
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -90,12 +94,22 @@ public class DropWithoutParking extends LinearOpMode {
         sleep(200);
     }
 
+    /**
+     * Calculates the current Z heading of the robot. The heading is set to -0 at the beginning of the opmode.
+     * Turning right moves the heading value in a positive direction while turning right moves the heading value in a negative direction.
+     * If the robot wraps around to the end of a set of values the number over/underflows.
+     *
+     * @return a double from -179 to 179 that indicates the current position
+     */
     public double getCurrentHeading() {
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double currentHeading = angles.firstAngle;
         return currentHeading;
     }
 
+    /**
+     * Resets the drive power and runmode of both motors to allow for power based driving.
+     */
     public void driveWithoutEncoders() {
         leftDrive.setPower(0);
         rightDrive.setPower(0);
@@ -103,16 +117,32 @@ public class DropWithoutParking extends LinearOpMode {
         rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
+    /**
+     * Sets the drive power for both motors at the same time for ease of coding.
+     *
+     * @param power A double from -1 to 1 that sets the power of the motor.
+     */
     public void setDrivePower(double power) {
         leftDrive.setPower(power);
         rightDrive.setPower(power);
     }
 
+    /**
+     * Sets the target encoder value for both motors at the same time for ease of coding.
+     *
+     * @param target An integer value corresponding to a target position.
+     */
     public void setDriveTarget(int target) {
         leftDrive.setTargetPosition(target);
         rightDrive.setTargetPosition(target);
     }
 
+    /**
+     * Turns the robot to a specified target position.
+     *
+     * @param currentHeading A double from -179 to 179 the corresponds to the Z value of the robot.
+     * @param targetHeading A double from -179 to 179 that corresponds to the Z value you want the robot to point to.
+     */
     public void navigateToHeading(double currentHeading, double targetHeading) {
         driveWithoutEncoders();
         // Turn right -- opModeIsActive() hopefully prevents crashes when stopping in while loops
@@ -131,6 +161,9 @@ public class DropWithoutParking extends LinearOpMode {
         clearDriveEncoders();
     }
 
+    /**
+     * Uses the arm controls to drop the team marker.
+     */
     public void dropTeamMarker() {
         // Rotate arm out
         armRotation.setPower(-0.5);
