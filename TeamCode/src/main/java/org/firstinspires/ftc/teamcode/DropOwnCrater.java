@@ -265,11 +265,13 @@ public class DropOwnCrater extends LinearOpMode {
         detector.enable(); // Start the detector!
 
         // Wait for the game to start (driver presses PLAY)
+        double xPosition = detector.getXPosition();
         telemetry.addData("Block Position", detector.getXPosition());
         telemetry.addData("Status: ", "Initialized");
         telemetry.update();
         waitForStart();
-        double xPosition = detector.getXPosition();
+
+        xPosition = detector.getXPosition();
         telemetry.addData("Block Position", xPosition);
         telemetry.addData("Status: ", "Initialized");
         telemetry.update();

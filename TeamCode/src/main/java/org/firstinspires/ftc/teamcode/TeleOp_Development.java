@@ -69,6 +69,8 @@ public class TeleOp_Development extends OpMode
     private DcMotor rearLift = null;
     private DcMotor armRotation = null;
     private Servo armExtension = null;
+    boolean ARM_LOCK = false;
+    int LOCK_POS;
 
     // The IMU sensor object
     BNO055IMU imu;
@@ -88,6 +90,8 @@ public class TeleOp_Development extends OpMode
      */
     @Override
     public void init() {
+        // Variables for arm lock
+
         // Establish hardware map using configured device names
         leftDrive  = hardwareMap.get(DcMotor.class, "motorLeft");
         rightDrive = hardwareMap.get(DcMotor.class, "motorRight");
@@ -111,7 +115,7 @@ public class TeleOp_Development extends OpMode
         rearLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rearLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         armRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -194,15 +198,33 @@ public class TeleOp_Development extends OpMode
         leftPower  = -gamepad1.left_stick_y / speedModifier;
         rightPower = -gamepad1.right_stick_y / speedModifier;
 
-        // Calculate power for arm
-        armRotationPower = -gamepad2.right_stick_y / 5;
+        /* Calculate power for arm
+        armRotationPower = -gamepad2.right_stick_y / 5; */
+
+        // Lock or unlock the arm
+        if (gamepad2.a) {
+            if (ARM_LOCK) {
+                ARM_LOCK = false;
+            } else {
+                ARM_LOCK = true;
+                LOCK_POS = armRotation.getCurrentPosition();
+            }
+        }
+
+
+        // Rotate the arm
+        if (gamepad2.right_stick_x < 0 && !ARM_LOCK) {
+            armRotation.setTargetPosition(armRotation.getCurrentPosition() + 30);
+        } else if (gamepad2.right_stick_x > 0 && !ARM_LOCK) {
+            armRotation.setTargetPosition(armRotation.getCurrentPosition() - 30);
+        }
 
         // Send calculated power to wheels
         leftDrive.setPower(leftPower);
         rightDrive.setPower(rightPower);
 
         // Send calculated power to arm
-        armRotation.setPower(armRotationPower);
+        // armRotation.setPower(armRotationPower);
 
         // Makes the arm vertical
         if (gamepad2.y) {

@@ -61,7 +61,6 @@ public class Autonomous_BasicDrop extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor rearLift = null;
-    private Servo dropperServo = null;
 
     @Override
     public void runOpMode() {
@@ -72,7 +71,6 @@ public class Autonomous_BasicDrop extends LinearOpMode {
         leftDrive  = hardwareMap.get(DcMotor.class, "motorLeft");
         rightDrive = hardwareMap.get(DcMotor.class, "motorRight");
         rearLift = hardwareMap.get(DcMotor.class, "rearLift");
-        dropperServo = hardwareMap.get(Servo.class, "dropperServo");
 
         // Set DC motor directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);

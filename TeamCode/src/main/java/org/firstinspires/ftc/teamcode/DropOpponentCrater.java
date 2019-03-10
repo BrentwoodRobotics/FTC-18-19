@@ -283,7 +283,7 @@ public class DropOpponentCrater extends LinearOpMode {
             // Lowers the robot from the Lander
             rearLift.setTargetPosition(7500);
             rearLift.setPower(1);
-            sleep(5500);
+            sleep(4000);
 
             // Get off lander hook
             leftDrive.setTargetPosition(-100);
@@ -306,7 +306,7 @@ public class DropOpponentCrater extends LinearOpMode {
                 telemetry.addData("Target", "Gold Block (left)");
                 telemetry.addData("Heading", getCurrentHeading());
                 telemetry.update();
-                setDrivePower(0.5);
+                setDrivePower(0.75);
                 setDriveTarget(2500);
                 armExtension.setPosition(0);
                 sleep(3000);
@@ -322,7 +322,7 @@ public class DropOpponentCrater extends LinearOpMode {
                 telemetry.update();
 
                 // Drive towards Depot
-                setDrivePower(0.6);
+                setDrivePower(0.75);
                 setDriveTarget(2250);
                 sleep(1500);
 
@@ -342,22 +342,20 @@ public class DropOpponentCrater extends LinearOpMode {
                 telemetry.update();
 
                 // Drive towards Wall
-                setDrivePower(0.6);
+                setDrivePower(0.75);
                 setDriveTarget(1250);
                 sleep(750);
 
                 // Turn towards crater
-                navigateToHeading(getCurrentHeading(), 45);
+                navigateToHeading(getCurrentHeading(), 130);
                 telemetry.addData("Arm", "Returned");
                 telemetry.addData("Target", "Crater");
                 telemetry.addData("Heading", getCurrentHeading());
                 telemetry.update();
 
                 // Drive to crater
-                rightDrive.setPower(-0.75);
-                leftDrive.setPower(-0.75);
-                leftDrive.setTargetPosition(-6000);
-                rightDrive.setTargetPosition(-6000);
+                setDrivePower(0.75);
+                setDriveTarget(6000);
             } else if (xPosition > 200) {   // CENTER
                 // Position towards block
                 navigateToHeading(getCurrentHeading(), 0);
@@ -367,7 +365,7 @@ public class DropOpponentCrater extends LinearOpMode {
                 telemetry.addData("Target", "Gold Block (center)");
                 telemetry.addData("Heading", getCurrentHeading());
                 telemetry.update();
-                setDrivePower(0.5);
+                setDrivePower(0.75);
                 setDriveTarget(4000);
                 armExtension.setPosition(0);
                 sleep(3000);
@@ -375,7 +373,7 @@ public class DropOpponentCrater extends LinearOpMode {
                 telemetry.addData("Target", "Depot");
                 telemetry.addData("Heading", getCurrentHeading());
                 telemetry.update();
-                armExtension.setPosition(0.5);
+                armExtension.setPosition(0.75);
                 sleep(2000);
                 setDrivePower(0);
                 clearDriveEncoders();
@@ -395,7 +393,7 @@ public class DropOpponentCrater extends LinearOpMode {
                 telemetry.update();
 
                 // Drive towards Wall
-                setDrivePower(0.6);
+                setDrivePower(0.75);
                 setDriveTarget(1200);
                 sleep(750);
 
@@ -420,7 +418,7 @@ public class DropOpponentCrater extends LinearOpMode {
                 telemetry.addData("Target", "Gold Block (left)");
                 telemetry.addData("Heading", getCurrentHeading());
                 telemetry.update();
-                setDrivePower(0.5);
+                setDrivePower(0.75);
                 setDriveTarget(2500);
                 armExtension.setPosition(0);
                 sleep(3000);
@@ -436,7 +434,7 @@ public class DropOpponentCrater extends LinearOpMode {
                 telemetry.update();
 
                 // Drive towards Depot
-                setDrivePower(0.6);
+                setDrivePower(0.75);
                 setDriveTarget(2250);
                 sleep(1500);
 
@@ -449,7 +447,7 @@ public class DropOpponentCrater extends LinearOpMode {
                 sleep(500);
 
                 // Turn towards crater
-                navigateToHeading(getCurrentHeading(), 120);
+                navigateToHeading(getCurrentHeading(), -45);
                 telemetry.addData("Arm", "Returned");
                 telemetry.addData("Target", "Crater");
                 telemetry.addData("Heading", getCurrentHeading());
@@ -458,8 +456,13 @@ public class DropOpponentCrater extends LinearOpMode {
                 // Drive to crater
                 rightDrive.setPower(0.75);
                 leftDrive.setPower(0.75);
-                leftDrive.setTargetPosition(5500);
-                rightDrive.setTargetPosition(5500);
+                leftDrive.setTargetPosition(-6000);
+                rightDrive.setTargetPosition(-6000);
+
+                // Extend arm at crater
+                armExtension.setPosition(0);
+                sleep(3000);
+                armExtension.setPosition(0.5);
             }
 
             // Sleep for safety
